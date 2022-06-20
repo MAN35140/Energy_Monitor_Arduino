@@ -2,8 +2,11 @@
 #include <ThingSpeak.h>   // https://github.com/mathworks/thingspeak-arduino
 #include <ESP8266WiFi.h>  // https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi
 
-char ssid[] = "TP-Link_1CC4";   // your network SSID (name) 
-char pass[] = "76767676";       // your network password
+//char ssid[] = "TP-Link_1CC4";   // your network SSID (name) 
+//char pass[] = "76767676";       // your network password
+
+char ssid[] = "MAN35";   // your network SSID (name) 
+char pass[] = "987654321";       // your network password
 
 WiFiClient  client;
 

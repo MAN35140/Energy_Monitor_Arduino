@@ -24,10 +24,7 @@ char ID_Node_2[] = "VNVP2"; // Ma nhan dang xac nhan ID Node2
 String Vol_DC, Cur_DC, Power_DC;  // Cac bien du lieu DC
 String Vol_AC, Cur_AC, Power_AC, Energy, Frequency, PowerFactor; // Cac bien du lieu AC
 String Weather; // Bien du lieu thoi tiet
-unsigned long last_time1 = 0;  // Gia tri time
-unsigned long last_time2 = 0;  // Gia tri time
-bool Flag1 = false;
-bool Flag2 = false;
+unsigned long last_time = 0;  // Gia tri time
 
 // Khoi tao Struct
 struct Node
@@ -58,7 +55,8 @@ void setup()
   if (!LoRa.begin(433E6)) 
   {
 //    Serial.println("Starting LoRa failed!");
-    while (1);
+//    while (1);
+    asm volatile ("jmp 0");
   }
 
   // register the receive callback
@@ -72,7 +70,7 @@ void loop()
 {
   // Khai bao cac bien chua vi tri cac ky tu dac biet
   int pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8, pos9, pos10;
-  
+    
   pos1 = LoRaData.indexOf('/'); // Xac dinh vi tri tu dau chuoi den '/' dau tien la 5
   device_id = LoRaData.substring(0, pos1); // Cat chuoi nhan duoc tu dau chuoi den vi tri thu 5, ket qua = "VNVP*"
   if(device_id == ID_Node_1 || device_id == ID_Node_2)  // Xac nhan dung ma ID 2 node
@@ -87,7 +85,7 @@ void loop()
     pos8 = LoRaData.indexOf('^');
     pos9 = LoRaData.indexOf('&');
     pos10 = LoRaData.indexOf('*');
-  
+    
     // Xu ly, tach chuoi nhan duoc va luu vao dung tung bien
     Vol_DC = LoRaData.substring(pos1 + 1, pos2);  // Cat chuoi nhan duoc tu vi tri 5+1 den vi tri thu 10
     Cur_DC = LoRaData.substring(pos2 + 1, pos3);
@@ -99,7 +97,7 @@ void loop()
     Frequency = LoRaData.substring(pos8 + 1, pos9);
     PowerFactor = LoRaData.substring(pos9 + 1, pos10);
     Weather = LoRaData.substring(pos10 + 1, LoRaData.length());
-      
+        
     if(device_id == ID_Node_1)  // Xac dinh dung chuoi nhan duoc la ID Node1
     {
       // Luu cac ket qua vao Struct Node1
@@ -113,8 +111,6 @@ void loop()
       Node1.Frequency = Frequency.toFloat();
       Node1.PowerFactor = PowerFactor.toFloat();
       Node1.Weather = Weather.toFloat();
-
-      Flag1 = true;
     }
     if(device_id == ID_Node_2) // Xac dinh dung chuoi nhan duoc la ID Node2
     {
@@ -129,55 +125,22 @@ void loop()
       Node2.Frequency = Frequency.toFloat();
       Node2.PowerFactor = PowerFactor.toFloat();
       Node2.Weather = Weather.toFloat();
-
-      Flag2 = true;
     }
-
-    if((unsigned long)(millis() - last_time1 > 5000)) // Thuc hien sau moi 5s
+  
+    if((unsigned long)(millis() - last_time > 5000)) // Thuc hien sau moi 5s
     {
       // Gui du lieu 2 struct cho NodeMCU ESP8266 thong qua HardwareUART
       // Chan Arduino 1 - TX - PD1 - 3 ATmega328P ket noi RX NodeMCU ESP8266
       // Chan Arduino 0 - RX - PD0 - 2 ATmega328P ket noi TX NodeMCU ESP8266
       Serial.write((byte*)&Node1, sizeof(Node1));
       Serial.write((byte*)&Node2, sizeof(Node2));
-      
+        
       digitalWrite(LED_Work, HIGH); // received data
       delay(100);
       digitalWrite(LED_Work, LOW);
       
       LoRaData = "";  // Xoa chuoi nhan duoc
-      last_time1 = millis();
-    }
-    if(Flag1 == true && Flag2 == true)
-    {
-      if((unsigned long)(millis() - last_time2 > 30000)) // Thuc hien sau moi 30s
-      {
-        Node1.Vol_DC = 0;
-        Node1.Cur_DC = 0;
-        Node1.Power_DC = 0;
-        Node1.Vol_AC = 0;
-        Node1.Cur_AC = 0;
-        Node1.Power_AC = 0;
-        Node1.Energy = 0;
-        Node1.Frequency = 0;
-        Node1.PowerFactor = 0;
-        Node1.Weather = 0;
-      
-        Node2.Vol_DC = 0;
-        Node2.Cur_DC = 0;
-        Node2.Power_DC = 0;
-        Node2.Vol_AC = 0;
-        Node2.Cur_AC = 0;
-        Node2.Power_AC = 0;
-        Node2.Energy = 0;
-        Node2.Frequency = 0;
-        Node2.PowerFactor = 0;
-        Node2.Weather = 0;
-
-        Flag1 = Flag2 = false;
-  
-        last_time2 = millis();
-      }
+      last_time = millis();
     }
   }
 }

@@ -147,37 +147,45 @@ void setup()
   if (!LoRa.begin(433E6)) 
   { 
 //    Serial.println("Starting LoRa failed!");
-    while (1);
+//    while (1);
+    asm volatile ("jmp 0");
   }
 }
 
 void loop() 
 {
-  if((unsigned long)(millis()-last_time) > 10000) // Thuc hien sau moi 10s
+  if (!LoRa.begin(433E6)) 
   {
-    DC_Vol();
-    DC_Cur();
-    DC_Pow();
-    AC_Pow();
-    WindSensor();
-  
-    // Dong goi ID Node1, cac ket qua du lieu, cac ky tu dac biet thanh 1 chuoi
-    LoRaMessage = String(device_id) + "/" + String(Vol_DC) + "~" + String(Cur_DC) + "!" + String(Power_DC)
-                + "@" + String(Vol_AC) + "#" + String(Cur_AC) + "$" + String(Power_AC)
-                + "%" + String(Energy) + "^" + String(Frequency) + "&" + String(PowerFactor) + "*" + String(Weather);
-  
-    // send packet
-    LoRa.beginPacket();
-    LoRa.print(LoRaMessage);
-    LoRa.endPacket();
+    asm volatile ("jmp 0");
+  }
+  else
+  {
+    if((unsigned long)(millis()-last_time) > 10000) // Thuc hien sau moi 10s
+    {
+      DC_Vol();
+      DC_Cur();
+      DC_Pow();
+      AC_Pow();
+      WindSensor();
     
-    digitalWrite(LED_Work, HIGH); // sent data
-    delay(100);
-    digitalWrite(LED_Work, LOW);
+      // Dong goi ID Node1, cac ket qua du lieu, cac ky tu dac biet thanh 1 chuoi
+      LoRaMessage = String(device_id) + "/" + String(Vol_DC) + "~" + String(Cur_DC) + "!" + String(Power_DC)
+                  + "@" + String(Vol_AC) + "#" + String(Cur_AC) + "$" + String(Power_AC)
+                  + "%" + String(Energy) + "^" + String(Frequency) + "&" + String(PowerFactor) + "*" + String(Weather);
+    
+      // send packet
+      LoRa.beginPacket();
+      LoRa.print(LoRaMessage);
+      LoRa.endPacket();
+      
+      digitalWrite(LED_Work, HIGH); // sent data
+      delay(100);
+      digitalWrite(LED_Work, LOW);
+    
+      // Clear
+      Vol_DC = Cur_DC = 0.00; 
   
-    // Clear
-    Vol_DC = Cur_DC = 0.00; 
-
-    last_time = millis();
+      last_time = millis();
+    }
   }
 }
